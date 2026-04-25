@@ -1,20 +1,34 @@
-version: '3.8'
-
 services:
-  mysql-db:  # Thụt lề 2 khoảng trắng
+  # Database MySQL cho Web Store
+  mysql-db:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: web_store
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      MYSQL_DATABASE: webstore
     ports:
       - "3306:3306"
 
-  legacy-adapter:  # Thụt lề 2 khoảng trắng
+  # Database PostgreSQL cho Finance
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: finance
+    ports:
+      - "5432:5432"
+
+  # Dịch vụ Report (Module 3)
+  report_service:
+    build: ./report_service
+    ports:
+      - "8001:8000"
+    depends_on:
+      - mysql-db
+      - postgres
+
+  # Dịch vụ Legacy Adapter
+  legacy-adapter:
     build: ./legacy_adapter
-    volumes:
-      - ./data/input:/app/input
-      - ./data/processed:/app/processed
     depends_on:
       - mysql-db
